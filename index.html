@@ -1,23 +1,41 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>My Cloud Diary</title>
+<title>Private Cloud Diary</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font-family:Arial;background:#111;color:white;text-align:center;padding:20px;}
+input,textarea,button{font-size:16px;padding:8px;margin:5px;width:90%;}
+.note{background:#222;padding:10px;margin:10px;border-radius:6px;}
+small{color:#aaa;}
+button{cursor:pointer;}
+.hidden{display:none;}
+</style>
 </head>
 <body>
 
-<h2>📔 My Cloud Diary</h2>
+<!-- LOGIN -->
+<div id="loginBox">
+<h2>🔐 Login</h2>
+<input id="email" placeholder="Email"><br>
+<input id="password" type="password" placeholder="Password"><br>
+<button onclick="login()">Login</button>
+<p id="msg"></p>
+</div>
 
-<textarea id="text" placeholder="Write your thoughts..."></textarea><br><br>
-<button onclick="save()">Save</button>
-
+<!-- DIARY -->
+<div id="diaryBox" class="hidden">
+<h2>📔 My Private Diary</h2>
+<textarea id="text" placeholder="Write your thoughts..."></textarea><br>
+<button onclick="save()">➕ Add</button>
+<button onclick="logout()">🚪 Logout</button>
 <div id="notes"></div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
@@ -32,34 +50,74 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const diaryRef = collection(db, "diary");
 
-window.save = async function(){
-  const text = document.getElementById("text").value;
-  if(!text) return alert("Write something!");
+// LOGIN
+window.login = function(){
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
 
-  try{
-    await addDoc(diaryRef, { text: text });
-    document.getElementById("text").value = "";
+  if(email === "yusufsodiq082@gmail.com" && pass === "a336336a"){
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("diaryBox").classList.remove("hidden");
     load();
-  }catch(e){
-    alert("ERROR: " + e.message);
+  } else {
+    document.getElementById("msg").innerText = "❌ Incorrect login or password";
   }
 }
 
+window.logout = function(){
+  location.reload();
+}
+
+// ADD
+window.save = async function(){
+  const text = document.getElementById("text").value.trim();
+  if(!text) return alert("Write something!");
+
+  await addDoc(diaryRef, {
+    text: text,
+    time: new Date().toLocaleString()
+  });
+
+  document.getElementById("text").value = "";
+  load();
+}
+
+// LOAD
 async function load(){
   const snap = await getDocs(diaryRef);
   const notes = document.getElementById("notes");
   notes.innerHTML = "";
 
-  snap.forEach(doc=>{
-    const d = doc.data();
+  snap.forEach(d=>{
+    const data = d.data();
     const div = document.createElement("div");
-    div.innerText = d.text;
+    div.className = "note";
+
+    div.innerHTML = `
+      <small>${data.time}</small><br>
+      <textarea id="t_${d.id}">${data.text}</textarea><br>
+      <button onclick="updateNote('${d.id}')">✏️ Update</button>
+      <button onclick="deleteNote('${d.id}')">🗑 Delete</button>
+    `;
     notes.appendChild(div);
   });
 }
 
-load();
-</script>
+// UPDATE
+window.updateNote = async function(id){
+  const text = document.getElementById("t_"+id).value;
+  await updateDoc(doc(db,"diary",id), { text:text });
+  alert("Updated ✅");
+}
 
+// DELETE
+window.deleteNote = async function(id){
+  if(confirm("Delete this note?")){
+    await deleteDoc(doc(db,"diary",id));
+    load();
+  }
+}
+
+</script>
 </body>
 </html>
