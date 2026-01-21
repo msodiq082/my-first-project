@@ -2,14 +2,13 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Private Cloud Diary</title>
+<title>Smart Private Diary</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{font-family:Arial;background:#111;color:white;text-align:center;padding:20px;}
-input,textarea,button{font-size:16px;padding:8px;margin:5px;width:90%;}
+body{font-family:Arial;background:#111;color:white;text-align:center;padding:15px;}
+input,textarea,button,select{font-size:15px;padding:6px;margin:5px;width:95%;}
 .note{background:#222;padding:10px;margin:10px;border-radius:6px;}
-small{color:#aaa;}
-button{cursor:pointer;}
+img{max-width:100%;border-radius:6px;margin-top:5px;}
 .hidden{display:none;}
 </style>
 </head>
@@ -18,24 +17,37 @@ button{cursor:pointer;}
 <!-- LOGIN -->
 <div id="loginBox">
 <h2>🔐 Login</h2>
-<input id="email" placeholder="Email"><br>
-<input id="password" type="password" placeholder="Password"><br>
+<input id="email" placeholder="Email">
+<input id="password" type="password">
 <button onclick="login()">Login</button>
 <p id="msg"></p>
 </div>
 
 <!-- DIARY -->
 <div id="diaryBox" class="hidden">
-<h2>📔 My Private Diary</h2>
-<textarea id="text" placeholder="Write your thoughts..."></textarea><br>
-<button onclick="save()">➕ Add</button>
+<h2>📔 My Smart Diary</h2>
+
+<input id="search" placeholder="🔍 Search..." oninput="load()">
+
+<select id="sort" onchange="load()">
+  <option value="new">Newest first</option>
+  <option value="old">Oldest first</option>
+</select>
+
+<textarea id="text" placeholder="Write your thoughts..."></textarea>
+
+<input type="file" id="image" accept="image/*">
+
+<button onclick="save()">➕ Add Entry</button>
 <button onclick="logout()">🚪 Logout</button>
+
 <div id="notes"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
@@ -48,76 +60,90 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 const diaryRef = collection(db, "diary");
 
 // LOGIN
 window.login = function(){
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
-
-  if(email === "yusufsodiq082@gmail.com" && pass === "a336336a"){
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("diaryBox").classList.remove("hidden");
+  if(email.value==="yusufsodiq082@gmail.com" && password.value==="a336336a"){
+    loginBox.classList.add("hidden");
+    diaryBox.classList.remove("hidden");
     load();
-  } else {
-    document.getElementById("msg").innerText = "❌ Incorrect login or password";
-  }
+  } else msg.innerText="❌ Incorrect login";
 }
+window.logout = ()=>location.reload();
 
-window.logout = function(){
-  location.reload();
-}
-
-// ADD
+// ADD ENTRY
 window.save = async function(){
   const text = document.getElementById("text").value.trim();
-  if(!text) return alert("Write something!");
+  const file = document.getElementById("image").files[0];
+  if(!text && !file) return alert("Write or select image");
 
-  await addDoc(diaryRef, {
-    text: text,
-    time: new Date().toLocaleString()
+  let imageURL = "";
+
+  if(file){
+    const imgRef = ref(storage, "images/"+Date.now()+"_"+file.name);
+    await uploadBytes(imgRef, file);
+    imageURL = await getDownloadURL(imgRef);
+  }
+
+  await addDoc(diaryRef,{
+    text:text,
+    image:imageURL,
+    time:Date.now()
   });
 
-  document.getElementById("text").value = "";
+  text.value="";
+  image.value="";
   load();
 }
 
-// LOAD
+// LOAD & FILTER
 async function load(){
   const snap = await getDocs(diaryRef);
-  const notes = document.getElementById("notes");
-  notes.innerHTML = "";
+  let notes = [];
+  snap.forEach(d=>notes.push({id:d.id,...d.data()}));
 
-  snap.forEach(d=>{
-    const data = d.data();
+  const keyword = search.value.toLowerCase();
+  notes = notes.filter(n => n.text?.toLowerCase().includes(keyword));
+
+  if(sort.value==="new") notes.sort((a,b)=>b.time-a.time);
+  else notes.sort((a,b)=>a.time-b.time);
+
+  const box = document.getElementById("notes");
+  box.innerHTML="";
+
+  notes.forEach(n=>{
     const div = document.createElement("div");
-    div.className = "note";
+    div.className="note";
+
+    const date = new Date(n.time).toLocaleString();
 
     div.innerHTML = `
-      <small>${data.time}</small><br>
-      <textarea id="t_${d.id}">${data.text}</textarea><br>
-      <button onclick="updateNote('${d.id}')">✏️ Update</button>
-      <button onclick="deleteNote('${d.id}')">🗑 Delete</button>
+      <small>${date}</small><br>
+      <textarea id="t_${n.id}">${n.text||""}</textarea>
+      ${n.image ? `<img src="${n.image}">` : ""}
+      <button onclick="updateNote('${n.id}')">✏️ Update</button>
+      <button onclick="deleteNote('${n.id}')">🗑 Delete</button>
     `;
-    notes.appendChild(div);
+    box.appendChild(div);
   });
 }
 
 // UPDATE
 window.updateNote = async function(id){
   const text = document.getElementById("t_"+id).value;
-  await updateDoc(doc(db,"diary",id), { text:text });
+  await updateDoc(doc(db,"diary",id),{text});
   alert("Updated ✅");
 }
 
 // DELETE
 window.deleteNote = async function(id){
-  if(confirm("Delete this note?")){
+  if(confirm("Delete this entry?")){
     await deleteDoc(doc(db,"diary",id));
     load();
   }
 }
-
 </script>
 </body>
 </html>
