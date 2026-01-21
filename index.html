@@ -3,108 +3,99 @@
 <head>
 <meta charset="UTF-8">
 <title>My Private Diary</title>
+<style>
+body{font-family:Arial; background:#111; color:white; text-align:center; padding:15px;}
+input,textarea,button{width:90%;padding:10px;margin:5px;font-size:16px;}
+.entry{background:#222;padding:10px;margin:10px;border-radius:8px;}
+.hidden{display:none;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+</head>
+<body>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<h2>🔐 Login</h2>
+<div id="loginBox">
+  <input id="email" placeholder="Email"><br>
+  <input id="password" type="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <p id="loginMsg"></p>
+</div>
 
-const firebaseConfig = {
+<div id="diary" class="hidden">
+  <h2>📔 My Diary</h2>
+  <textarea id="text" placeholder="Write your thoughts..."></textarea><br>
+  <button onclick="addEntry()">➕ Save</button>
+  <button onclick="logout()">🚪 Logout</button>
+  <div id="entries"></div>
+</div>
+
+<script>
+// -------- FIREBASE CONFIG ----------
+var firebaseConfig = {
   apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
   authDomain: "my-diary-app-ee165.firebaseapp.com",
   projectId: "my-diary-app-ee165",
+  storageBucket: "my-diary-app-ee165.appspot.com",
+  messagingSenderId: "754565123662",
+  appId: "1:754565123662:web:6862a02f691ad2b453bd1f"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
 
-// ---------- LOGIN ----------
-window.login = async function () {
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
+// -------- LOGIN ----------
+const USER="yusufsodiq082@gmail.com";
+const PASS="a336336a";
 
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch (e) {
-    alert("Login failed");
+function login(){
+  if(email.value===USER && password.value===PASS){
+    loginBox.classList.add("hidden");
+    diary.classList.remove("hidden");
+    loadEntries();
+  } else {
+    loginMsg.innerText="❌ Incorrect login or password";
   }
-};
+}
 
-// ---------- LOGOUT ----------
-window.logout = function () {
-  signOut(auth);
-};
+function logout(){ location.reload(); }
 
-// ---------- ADD ENTRY ----------
-window.addEntry = async function () {
-  const text = document.getElementById("text").value;
-  if (!text) return alert("Write something");
-
-  await addDoc(collection(db, "diary"), {
-    text: text,
+// -------- ADD ENTRY ----------
+function addEntry(){
+  const txt = text.value.trim();
+  if(!txt) return alert("Write something!");
+  db.collection("diary").add({
+    text: txt,
     time: new Date().toLocaleString()
-  });
+  }).then(()=>{
+    text.value="";
+    loadEntries();
+  }).catch(err=>alert("Error: "+err.message));
+}
 
-  document.getElementById("text").value = "";
-  loadEntries();
-};
-
-// ---------- LOAD ----------
-async function loadEntries() {
-  const list = document.getElementById("entries");
-  list.innerHTML = "";
-
-  const snap = await getDocs(collection(db, "diary"));
-  snap.forEach(docu => {
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <p>${docu.data().time}</p>
-      <b>${docu.data().text}</b>
-      <button onclick="deleteEntry('${docu.id}')">❌</button>
-      <hr>
-    `;
-    list.appendChild(div);
+// -------- LOAD ENTRIES ----------
+function loadEntries(){
+  db.collection("diary").orderBy("time","desc").get().then(snapshot=>{
+    entries.innerHTML="";
+    snapshot.forEach(docu=>{
+      const data = docu.data();
+      const div = document.createElement("div");
+      div.className="entry";
+      div.innerHTML = `
+        <b>${data.time}</b><br>${data.text}<br>
+        <button onclick="deleteEntry('${docu.id}')">🗑 Delete</button>
+      `;
+      entries.appendChild(div);
+    });
   });
 }
 
-// ---------- DELETE ----------
-window.deleteEntry = async function (id) {
-  await deleteDoc(doc(db, "diary", id));
-  loadEntries();
-};
-
-// ---------- AUTH STATE ----------
-onAuthStateChanged(auth, user => {
-  if (user) {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("app").style.display = "block";
-    loadEntries();
-  } else {
-    document.getElementById("login").style.display = "block";
-    document.getElementById("app").style.display = "none";
-  }
-});
+// -------- DELETE ENTRY ----------
+function deleteEntry(id){
+  db.collection("diary").doc(id).delete().then(()=>loadEntries());
+}
 </script>
-</head>
-
-<body style="font-family:Arial; background:#111; color:white; text-align:center;">
-
-<h2>📘 My Private Diary</h2>
-
-<div id="login">
-  <input id="email" placeholder="Email"><br><br>
-  <input id="password" type="password" placeholder="Password"><br><br>
-  <button onclick="login()">Login</button>
-</div>
-
-<div id="app" style="display:none;">
-  <textarea id="text" rows="4" style="width:90%;"></textarea><br><br>
-  <button onclick="addEntry()">Save</button>
-  <button onclick="logout()">Logout</button>
-  <hr>
-  <div id="entries"></div>
-</div>
 
 </body>
 </html>
