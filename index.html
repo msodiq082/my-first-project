@@ -1,59 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cloud Diary</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {background:#111;color:white;font-family:Arial;padding:15px;}
-    textarea {width:100%;height:120px;border-radius:8px;padding:10px;border:none;margin-top:10px;}
-    button {padding:10px;border:none;border-radius:6px;background:#00bfff;font-weight:bold;margin-top:10px;}
-    .entry {background:#222;padding:10px;border-radius:8px;margin-top:10px;}
-  </style>
+<meta charset="UTF-8">
+<title>My Cloud Diary</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  font-family: Arial;
+  background:#111;
+  color:white;
+  text-align:center;
+  padding:20px;
+}
+textarea{
+  width:100%;
+  height:120px;
+  font-size:16px;
+}
+button{
+  padding:10px 15px;
+  font-size:16px;
+  margin:5px;
+}
+.note{
+  background:#222;
+  padding:10px;
+  margin:10px 0;
+  border-radius:6px;
+}
+</style>
 </head>
 <body>
 
-<h2>☁️ My Cloud Diary</h2>
+<h2>📔 My Cloud Diary</h2>
+
 <textarea id="text" placeholder="Write your thoughts..."></textarea><br>
-<button onclick="save()">Save</button>
+<button onclick="save()">💾 Save</button>
 
-<div id="entries"></div>
+<div id="notes"></div>
 
+<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 🔴 PASTE YOUR FIREBASE CONFIG HERE
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_APIKEY",
-  authDomain: "PASTE_YOUR_AUTHDOMAIN",
-  projectId: "PASTE_YOUR_PROJECTID",
-  storageBucket: "PASTE_YOUR_STORAGEBUCKET",
-  messagingSenderId: "PASTE_YOUR_MESSAGINGID",
-  appId: "PASTE_YOUR_APPID"
+  apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
+  authDomain: "my-diary-app-ee165.firebaseapp.com",
+  projectId: "my-diary-app-ee165",
+  storageBucket: "my-diary-app-ee165.firebasestorage.app",
+  messagingSenderId: "754565123662",
+  appId: "1:754565123662:web:6862a02f691ad2b453bd1f",
+  measurementId: "G-0N47GP26F2"
 };
-// 🔴 END CONFIG
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const diaryRef = collection(db, "diary");
 
-async function save() {
-  const text = document.getElementById("text").value;
-  if(!text) return;
+window.save = async function(){
+  const text = document.getElementById("text").value.trim();
+  if(!text) return alert("Write something!");
 
-  await addDoc(diaryRef, { text: text, time: Date.now() });
-  document.getElementById("text").value = "";
-  load();
+  try{
+    await addDoc(diaryRef, {
+      text: text,
+      time: Date.now()
+    });
+    document.getElementById("text").value = "";
+    load();
+  }catch(e){
+    alert("Save failed: " + e.message);
+  }
 }
 
-async function load() {
-  const q = query(diaryRef, orderBy("time", "desc"));
+async function load(){
+  const q = query(diaryRef, orderBy("time","desc"));
   const snap = await getDocs(q);
-  const box = document.getElementById("entries");
-  box.innerHTML = "";
-  snap.forEach(doc => {
+  const notes = document.getElementById("notes");
+  notes.innerHTML = "";
+
+  snap.forEach(doc=>{
     const d = doc.data();
-    box.innerHTML += `<div class="entry"><b>${new Date(d.time).toLocaleString()}</b><br>${d.text}</div>`;
+    const div = document.createElement("div");
+    div.className = "note";
+    div.innerText = d.text;
+    notes.appendChild(div);
   });
 }
 
