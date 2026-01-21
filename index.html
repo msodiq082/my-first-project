@@ -11,7 +11,6 @@ input,textarea,button{width:90%;padding:10px;margin:5px;font-size:16px;}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
 </head>
 <body>
 
@@ -19,15 +18,15 @@ input,textarea,button{width:90%;padding:10px;margin:5px;font-size:16px;}
 <div id="loginBox">
   <input id="email" placeholder="Email"><br>
   <input id="password" type="password" placeholder="Password"><br>
-  <button onclick="login()">Login</button>
+  <button id="loginBtn">Login</button>
   <p id="loginMsg"></p>
 </div>
 
 <div id="diary" class="hidden">
   <h2>📔 My Diary</h2>
   <textarea id="text" placeholder="Write your thoughts..."></textarea><br>
-  <button onclick="addEntry()">➕ Save</button>
-  <button onclick="logout()">🚪 Logout</button>
+  <button id="saveBtn">➕ Save</button>
+  <button id="logoutBtn">🚪 Logout</button>
   <div id="entries"></div>
 </div>
 
@@ -45,39 +44,44 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
-// -------- LOGIN ----------
-const USER="yusufsodiq082@gmail.com";
-const PASS="a336336a";
+// -------- LOGIN CHECK ----------
+const USER = "yusufsodiq082@gmail.com";
+const PASS = "a336336a";
 
-function login(){
-  if(email.value===USER && password.value===PASS){
-    loginBox.classList.add("hidden");
-    diary.classList.remove("hidden");
+document.getElementById("loginBtn").onclick = function(){
+  const e = document.getElementById("email").value;
+  const p = document.getElementById("password").value;
+  if(e===USER && p===PASS){
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("diary").classList.remove("hidden");
     loadEntries();
   } else {
-    loginMsg.innerText="❌ Incorrect login or password";
+    document.getElementById("loginMsg").innerText = "❌ Incorrect login or password";
   }
-}
+};
 
-function logout(){ location.reload(); }
+document.getElementById("logoutBtn").onclick = function(){
+  location.reload();
+};
 
 // -------- ADD ENTRY ----------
-function addEntry(){
-  const txt = text.value.trim();
+document.getElementById("saveBtn").onclick = function(){
+  const txt = document.getElementById("text").value.trim();
   if(!txt) return alert("Write something!");
   db.collection("diary").add({
     text: txt,
     time: new Date().toLocaleString()
   }).then(()=>{
-    text.value="";
+    document.getElementById("text").value="";
     loadEntries();
   }).catch(err=>alert("Error: "+err.message));
-}
+};
 
 // -------- LOAD ENTRIES ----------
 function loadEntries(){
   db.collection("diary").orderBy("time","desc").get().then(snapshot=>{
-    entries.innerHTML="";
+    const entriesDiv = document.getElementById("entries");
+    entriesDiv.innerHTML="";
     snapshot.forEach(docu=>{
       const data = docu.data();
       const div = document.createElement("div");
@@ -86,7 +90,7 @@ function loadEntries(){
         <b>${data.time}</b><br>${data.text}<br>
         <button onclick="deleteEntry('${docu.id}')">🗑 Delete</button>
       `;
-      entries.appendChild(div);
+      entriesDiv.appendChild(div);
     });
   });
 }
@@ -96,6 +100,5 @@ function deleteEntry(id){
   db.collection("diary").doc(id).delete().then(()=>loadEntries());
 }
 </script>
-
 </body>
 </html>
