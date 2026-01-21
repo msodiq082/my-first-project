@@ -35,7 +35,6 @@ img{max-width:100%;border-radius:6px;margin-top:5px;}
 </select>
 
 <textarea id="text" placeholder="Write your thoughts..."></textarea>
-
 <input type="file" id="image" accept="image/*">
 
 <button onclick="save()">➕ Add Entry</button>
@@ -53,7 +52,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
   authDomain: "my-diary-app-ee165.firebaseapp.com",
   projectId: "my-diary-app-ee165",
-  storageBucket: "my-diary-app-ee165.firebasestorage.app",
+  storageBucket: "my-diary-app-ee165.appspot.com",   // ✅ FIXED
   messagingSenderId: "754565123662",
   appId: "1:754565123662:web:6862a02f691ad2b453bd1f"
 };
@@ -75,27 +74,31 @@ window.logout = ()=>location.reload();
 
 // ADD ENTRY
 window.save = async function(){
-  const text = document.getElementById("text").value.trim();
+  const txt = document.getElementById("text").value.trim();
   const file = document.getElementById("image").files[0];
-  if(!text && !file) return alert("Write or select image");
+  if(!txt && !file) return alert("Write or select image");
 
   let imageURL = "";
 
-  if(file){
-    const imgRef = ref(storage, "images/"+Date.now()+"_"+file.name);
-    await uploadBytes(imgRef, file);
-    imageURL = await getDownloadURL(imgRef);
+  try{
+    if(file){
+      const imgRef = ref(storage, "images/"+Date.now()+"_"+file.name);
+      await uploadBytes(imgRef, file);
+      imageURL = await getDownloadURL(imgRef);
+    }
+
+    await addDoc(diaryRef,{
+      text:txt,
+      image:imageURL,
+      time:Date.now()
+    });
+
+    text.value="";
+    image.value="";
+    load();
+  }catch(e){
+    alert("Save error: " + e.message);
   }
-
-  await addDoc(diaryRef,{
-    text:text,
-    image:imageURL,
-    time:Date.now()
-  });
-
-  text.value="";
-  image.value="";
-  load();
 }
 
 // LOAD & FILTER
@@ -105,7 +108,7 @@ async function load(){
   snap.forEach(d=>notes.push({id:d.id,...d.data()}));
 
   const keyword = search.value.toLowerCase();
-  notes = notes.filter(n => n.text?.toLowerCase().includes(keyword));
+  notes = notes.filter(n => (n.text||"").toLowerCase().includes(keyword));
 
   if(sort.value==="new") notes.sort((a,b)=>b.time-a.time);
   else notes.sort((a,b)=>a.time-b.time);
@@ -117,7 +120,7 @@ async function load(){
     const div = document.createElement("div");
     div.className="note";
 
-    const date = new Date(n.time).toLocaleString();
+    const date = n.time ? new Date(n.time).toLocaleString() : "";
 
     div.innerHTML = `
       <small>${date}</small><br>
