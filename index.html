@@ -2,151 +2,109 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Smart Private Diary</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{font-family:Arial;background:#111;color:white;text-align:center;padding:15px;}
-input,textarea,button,select{font-size:15px;padding:6px;margin:5px;width:95%;}
-.note{background:#222;padding:10px;margin:10px;border-radius:6px;}
-img{max-width:100%;border-radius:6px;margin-top:5px;}
-.hidden{display:none;}
-</style>
-</head>
-<body>
-
-<!-- LOGIN -->
-<div id="loginBox">
-<h2>🔐 Login</h2>
-<input id="email" placeholder="Email">
-<input id="password" type="password">
-<button onclick="login()">Login</button>
-<p id="msg"></p>
-</div>
-
-<!-- DIARY -->
-<div id="diaryBox" class="hidden">
-<h2>📔 My Smart Diary</h2>
-
-<input id="search" placeholder="🔍 Search..." oninput="load()">
-
-<select id="sort" onchange="load()">
-  <option value="new">Newest first</option>
-  <option value="old">Oldest first</option>
-</select>
-
-<textarea id="text" placeholder="Write your thoughts..."></textarea>
-<input type="file" id="image" accept="image/*">
-
-<button onclick="save()">➕ Add Entry</button>
-<button onclick="logout()">🚪 Logout</button>
-
-<div id="notes"></div>
-</div>
+<title>My Private Diary</title>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
   authDomain: "my-diary-app-ee165.firebaseapp.com",
   projectId: "my-diary-app-ee165",
-  storageBucket: "my-diary-app-ee165.appspot.com",   // ✅ FIXED
-  messagingSenderId: "754565123662",
-  appId: "1:754565123662:web:6862a02f691ad2b453bd1f"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
-const diaryRef = collection(db, "diary");
+const auth = getAuth(app);
 
-// LOGIN
-window.login = function(){
-  if(email.value==="yusufsodiq082@gmail.com" && password.value==="a336336a"){
-    loginBox.classList.add("hidden");
-    diaryBox.classList.remove("hidden");
-    load();
-  } else msg.innerText="❌ Incorrect login";
-}
-window.logout = ()=>location.reload();
+// ---------- LOGIN ----------
+window.login = async function () {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
 
-// ADD ENTRY
-window.save = async function(){
-  const txt = document.getElementById("text").value.trim();
-  const file = document.getElementById("image").files[0];
-  if(!txt && !file) return alert("Write or select image");
-
-  let imageURL = "";
-
-  try{
-    if(file){
-      const imgRef = ref(storage, "images/"+Date.now()+"_"+file.name);
-      await uploadBytes(imgRef, file);
-      imageURL = await getDownloadURL(imgRef);
-    }
-
-    await addDoc(diaryRef,{
-      text:txt,
-      image:imageURL,
-      time:Date.now()
-    });
-
-    text.value="";
-    image.value="";
-    load();
-  }catch(e){
-    alert("Save error: " + e.message);
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (e) {
+    alert("Login failed");
   }
-}
+};
 
-// LOAD & FILTER
-async function load(){
-  const snap = await getDocs(diaryRef);
-  let notes = [];
-  snap.forEach(d=>notes.push({id:d.id,...d.data()}));
+// ---------- LOGOUT ----------
+window.logout = function () {
+  signOut(auth);
+};
 
-  const keyword = search.value.toLowerCase();
-  notes = notes.filter(n => (n.text||"").toLowerCase().includes(keyword));
+// ---------- ADD ENTRY ----------
+window.addEntry = async function () {
+  const text = document.getElementById("text").value;
+  if (!text) return alert("Write something");
 
-  if(sort.value==="new") notes.sort((a,b)=>b.time-a.time);
-  else notes.sort((a,b)=>a.time-b.time);
+  await addDoc(collection(db, "diary"), {
+    text: text,
+    time: new Date().toLocaleString()
+  });
 
-  const box = document.getElementById("notes");
-  box.innerHTML="";
+  document.getElementById("text").value = "";
+  loadEntries();
+};
 
-  notes.forEach(n=>{
+// ---------- LOAD ----------
+async function loadEntries() {
+  const list = document.getElementById("entries");
+  list.innerHTML = "";
+
+  const snap = await getDocs(collection(db, "diary"));
+  snap.forEach(docu => {
     const div = document.createElement("div");
-    div.className="note";
-
-    const date = n.time ? new Date(n.time).toLocaleString() : "";
-
     div.innerHTML = `
-      <small>${date}</small><br>
-      <textarea id="t_${n.id}">${n.text||""}</textarea>
-      ${n.image ? `<img src="${n.image}">` : ""}
-      <button onclick="updateNote('${n.id}')">✏️ Update</button>
-      <button onclick="deleteNote('${n.id}')">🗑 Delete</button>
+      <p>${docu.data().time}</p>
+      <b>${docu.data().text}</b>
+      <button onclick="deleteEntry('${docu.id}')">❌</button>
+      <hr>
     `;
-    box.appendChild(div);
+    list.appendChild(div);
   });
 }
 
-// UPDATE
-window.updateNote = async function(id){
-  const text = document.getElementById("t_"+id).value;
-  await updateDoc(doc(db,"diary",id),{text});
-  alert("Updated ✅");
-}
+// ---------- DELETE ----------
+window.deleteEntry = async function (id) {
+  await deleteDoc(doc(db, "diary", id));
+  loadEntries();
+};
 
-// DELETE
-window.deleteNote = async function(id){
-  if(confirm("Delete this entry?")){
-    await deleteDoc(doc(db,"diary",id));
-    load();
+// ---------- AUTH STATE ----------
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    loadEntries();
+  } else {
+    document.getElementById("login").style.display = "block";
+    document.getElementById("app").style.display = "none";
   }
-}
+});
 </script>
+</head>
+
+<body style="font-family:Arial; background:#111; color:white; text-align:center;">
+
+<h2>📘 My Private Diary</h2>
+
+<div id="login">
+  <input id="email" placeholder="Email"><br><br>
+  <input id="password" type="password" placeholder="Password"><br><br>
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="app" style="display:none;">
+  <textarea id="text" rows="4" style="width:90%;"></textarea><br><br>
+  <button onclick="addEntry()">Save</button>
+  <button onclick="logout()">Logout</button>
+  <hr>
+  <div id="entries"></div>
+</div>
+
 </body>
 </html>
