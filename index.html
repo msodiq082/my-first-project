@@ -23,21 +23,29 @@ input, textarea, button {
   margin: 10px;
   border-radius: 8px;
   text-align: left;
-  position: relative;
 }
 .entry button {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  padding: 4px 8px;
+  padding: 4px 6px;
   font-size: 12px;
+  margin-left: 4px;
+  float: right;
 }
 .hidden { display: none; }
 </style>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  getDocs, 
+  query, 
+  orderBy, 
+  doc, 
+  deleteDoc, 
+  updateDoc 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // ---------- FIREBASE ----------
 const firebaseConfig = {
@@ -98,12 +106,16 @@ window.addEventListener("DOMContentLoaded", ()=>{
       const d = docSnap.data();
       const div = document.createElement("div");
       div.className="entry";
+
       div.innerHTML = `
         <b>${new Date(d.time).toLocaleString()}</b><br>
         <span class="entry-text">${d.text}</span>
-        <button class="editBtn">✏️</button>
-        <button class="delBtn">🗑️</button>
+        <div style="text-align: right; margin-top: 5px;">
+          <button class="editBtn">✏️</button>
+          <button class="delBtn">🗑️</button>
+        </div>
       `;
+
       entriesDiv.appendChild(div);
 
       // ---------- DELETE ----------
@@ -115,10 +127,10 @@ window.addEventListener("DOMContentLoaded", ()=>{
       };
 
       // ---------- EDIT ----------
-      div.querySelector(".editBtn").onclick = ()=>{
+      div.querySelector(".editBtn").onclick = async ()=>{
         const newText = prompt("Edit your entry:", d.text);
         if(newText !== null){
-          updateDoc(doc(db,"diary",docSnap.id), { text: newText });
+          await updateDoc(doc(db,"diary",docSnap.id), { text: newText });
           loadEntries();
         }
       };
