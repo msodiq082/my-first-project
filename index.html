@@ -1,12 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Cloud Diary</title>
+<title>My Cloud Diary</title>
+<style>
+body { font-family: Arial; background:#111; color:white; text-align:center; padding:20px; }
+input,button { width:90%; padding:12px; margin:6px; font-size:16px; }
+.hidden { display:none; }
+</style>
 </head>
+
 <body>
 
-<h1>📔 My Diary</h1>
-<p>If you see this, your site works.</p>
+<h2>🔐 Login</h2>
+
+<div id="loginBox">
+  <input id="email" placeholder="Email"><br>
+  <input id="password" type="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <p id="msg"></p>
+</div>
+
+<div id="diary" class="hidden">
+  <h2>📔 Welcome to your diary</h2>
+  <p>Login successful ✅</p>
+</div>
+
+<script>
+const USER = "yusufsodiq082@gmail.com";
+const PASS = "a336336a";
+
+function login(){
+  const e = document.getElementById("email").value;
+  const p = document.getElementById("password").value;
+
+  if(e === USER && p === PASS){
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("diary").classList.remove("hidden");
+  } else {
+    document.getElementById("msg").innerText = "❌ Incorrect login or password";
+  }
+}
+</script>
 
 </body>
 </html>
