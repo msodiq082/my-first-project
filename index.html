@@ -1,22 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <title>My Cloud Diary</title>
 <style>
-body { font-family: Arial; background:#111; color:white; text-align:center; padding:20px; }
-input,button { width:90%; padding:12px; margin:6px; font-size:16px; }
-.hidden { display:none; }
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+input, button {
+  width: 90%;
+  padding: 12px;
+  margin: 6px;
+  font-size: 16px;
+}
+.hidden { display: none; }
 </style>
 </head>
 
 <body>
 
-<h2>🔐 Login</h2>
+<h2 id="title">🔐 Login</h2>
 
 <div id="loginBox">
-  <input id="email" placeholder="Email"><br>
-  <input id="password" type="password" placeholder="Password"><br>
-  <button onclick="login()">Login</button>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button id="loginBtn">Login</button>
   <p id="msg"></p>
 </div>
 
@@ -29,17 +41,18 @@ input,button { width:90%; padding:12px; margin:6px; font-size:16px; }
 const USER = "yusufsodiq082@gmail.com";
 const PASS = "a336336a";
 
-function login(){
+document.getElementById("loginBtn").addEventListener("click", function() {
   const e = document.getElementById("email").value;
   const p = document.getElementById("password").value;
 
-  if(e === USER && p === PASS){
+  if (e === USER && p === PASS) {
     document.getElementById("loginBox").classList.add("hidden");
     document.getElementById("diary").classList.remove("hidden");
+    document.getElementById("title").innerText = "📔 My Diary";
   } else {
     document.getElementById("msg").innerText = "❌ Incorrect login or password";
   }
-}
+});
 </script>
 
 </body>
