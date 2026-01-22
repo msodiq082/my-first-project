@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>My Cloud Diary</title>
-
 <style>
 body {
   font-family: Arial;
@@ -23,11 +22,83 @@ input, textarea, button {
   padding: 10px;
   margin: 10px;
   border-radius: 8px;
+  text-align: left;
 }
 .hidden { display: none; }
 </style>
-</head>
+<script type="module">
+  // ---------- FIREBASE ----------
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+  const firebaseConfig = {
+    apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
+    authDomain: "my-diary-app-ee165.firebaseapp.com",
+    projectId: "my-diary-app-ee165"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ---------- LOGIN ----------
+  const USER = "yusufsodiq082@gmail.com";
+  const PASS = "a336336a";
+
+  window.addEventListener("DOMContentLoaded", ()=>{
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const loginBox = document.getElementById("loginBox");
+    const diary = document.getElementById("diary");
+    const title = document.getElementById("title");
+    const msg = document.getElementById("msg");
+    const text = document.getElementById("text");
+    const saveBtn = document.getElementById("saveBtn");
+    const entriesDiv = document.getElementById("entries");
+
+    loginBtn.onclick = ()=>{
+      if(email.value === USER && password.value === PASS){
+        loginBox.classList.add("hidden");
+        diary.classList.remove("hidden");
+        title.innerText = "📔 My Diary";
+        loadEntries();
+      } else {
+        msg.innerText = "❌ Incorrect login or password";
+      }
+    };
+
+    // ---------- SAVE ENTRY ----------
+    saveBtn.onclick = async ()=>{
+      const txt = text.value.trim();
+      if(!txt) return alert("Write something!");
+      try {
+        await addDoc(collection(db,"diary"),{
+          text: txt,
+          time: new Date().toLocaleString()
+        });
+        text.value = "";
+        loadEntries();
+      } catch(e){
+        alert("Error saving: " + e.message);
+      }
+    };
+
+    // ---------- LOAD ENTRIES ----------
+    async function loadEntries(){
+      entriesDiv.innerHTML = "";
+      const q = query(collection(db,"diary"), orderBy("time","desc"));
+      const snapshot = await getDocs(q);
+      snapshot.forEach(doc=>{
+        const d = doc.data();
+        const div = document.createElement("div");
+        div.className="entry";
+        div.innerHTML = `<b>${d.time}</b><br>${d.text}`;
+        entriesDiv.appendChild(div);
+      });
+    }
+  });
+</script>
+</head>
 <body>
 
 <h2 id="title">🔐 Login</h2>
@@ -40,81 +111,10 @@ input, textarea, button {
 </div>
 
 <div id="diary" class="hidden">
-  <h2>📔 My Diary</h2>
   <textarea id="text" placeholder="Write your thoughts..."></textarea>
   <button id="saveBtn">➕ Save</button>
   <div id="entries"></div>
 </div>
 
-<script type="module">
-
-// ✅ Firebase imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  getDocs, 
-  query, 
-  orderBy 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-// ---------- LOGIN ----------
-const USER = "yusufsodiq082@gmail.com";
-const PASS = "a336336a";
-
-loginBtn.onclick = function(){
-  if(email.value === USER && password.value === PASS){
-    loginBox.classList.add("hidden");
-    diary.classList.remove("hidden");
-    title.innerText = "📔 My Diary";
-    loadEntries();
-  } else {
-    msg.innerText = "❌ Incorrect login or password";
-  }
-};
-
-// ---------- FIREBASE CONFIG ----------
-const firebaseConfig = {
-  apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
-  authDomain: "my-diary-app-ee165.firebaseapp.com",
-  projectId: "my-diary-app-ee165"
-};
-
-// ✅ Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// ---------- SAVE ----------
-saveBtn.onclick = async function(){
-  const txt = text.value.trim();
-  if(!txt) return alert("Write something!");
-
-  await addDoc(collection(db, "diary"), {
-    text: txt,
-    time: Date.now()
-  });
-
-  text.value = "";
-  loadEntries();
-};
-
-// ---------- LOAD ----------
-async function loadEntries(){
-  entries.innerHTML = "";
-
-  const q = query(collection(db, "diary"), orderBy("time", "desc"));
-  const snapshot = await getDocs(q);
-
-  snapshot.forEach(doc => {
-    const d = doc.data();
-    const div = document.createElement("div");
-    div.className = "entry";
-    div.innerHTML = `<b>${new Date(d.time).toLocaleString()}</b><br>${d.text}`;
-    entries.appendChild(div);
-  });
-}
-
-</script>
 </body>
 </html>
