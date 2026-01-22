@@ -9,16 +9,25 @@ body {
   background: #111;
   color: white;
   text-align: center;
-  padding: 20px;
+  padding: 15px;
 }
-input, button {
-  width: 90%;
+input, textarea, button {
+  width: 95%;
   padding: 12px;
   margin: 6px;
   font-size: 16px;
 }
+.entry {
+  background: #222;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 8px;
+}
 .hidden { display: none; }
 </style>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 </head>
 
 <body>
@@ -33,26 +42,68 @@ input, button {
 </div>
 
 <div id="diary" class="hidden">
-  <h2>📔 Welcome to your diary</h2>
-  <p>Login successful ✅</p>
+  <h2>📔 My Diary</h2>
+
+  <textarea id="text" placeholder="Write your thoughts..."></textarea>
+  <button id="saveBtn">➕ Save</button>
+
+  <div id="entries"></div>
 </div>
 
 <script>
+// ---------- LOGIN ----------
 const USER = "yusufsodiq082@gmail.com";
 const PASS = "a336336a";
 
-document.getElementById("loginBtn").addEventListener("click", function() {
-  const e = document.getElementById("email").value;
-  const p = document.getElementById("password").value;
-
-  if (e === USER && p === PASS) {
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("diary").classList.remove("hidden");
-    document.getElementById("title").innerText = "📔 My Diary";
+document.getElementById("loginBtn").onclick = function(){
+  const e = email.value;
+  const p = password.value;
+  if(e === USER && p === PASS){
+    loginBox.classList.add("hidden");
+    diary.classList.remove("hidden");
+    title.innerText = "📔 My Diary";
+    loadEntries();
   } else {
-    document.getElementById("msg").innerText = "❌ Incorrect login or password";
+    msg.innerText = "❌ Incorrect login or password";
   }
-});
+};
+
+// ---------- FIREBASE ----------
+var firebaseConfig = {
+  apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
+  authDomain: "my-diary-app-ee165.firebaseapp.com",
+  projectId: "my-diary-app-ee165"
+};
+
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+
+// ---------- SAVE ----------
+saveBtn.onclick = function(){
+  const txt = text.value.trim();
+  if(!txt) return alert("Write something!");
+  db.collection("diary").add({
+    text: txt,
+    time: new Date().toLocaleString()
+  }).then(()=>{
+    text.value="";
+    loadEntries();
+  });
+};
+
+// ---------- LOAD ----------
+function loadEntries(){
+  db.collection("diary").orderBy("time","desc").get().then(snapshot=>{
+    entries.innerHTML="";
+    snapshot.forEach(doc=>{
+      const d = doc.data();
+      const div = document.createElement("div");
+      div.className="entry";
+      div.innerHTML = `<b>${d.time}</b><br>${d.text}`;
+      entries.appendChild(div);
+    });
+  });
+}
 </script>
 
 </body>
