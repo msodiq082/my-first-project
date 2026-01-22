@@ -23,80 +23,117 @@ input, textarea, button {
   margin: 10px;
   border-radius: 8px;
   text-align: left;
+  position: relative;
+}
+.entry button {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  padding: 4px 8px;
+  font-size: 12px;
 }
 .hidden { display: none; }
 </style>
+
 <script type="module">
-  // ---------- FIREBASE ----------
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
-    authDomain: "my-diary-app-ee165.firebaseapp.com",
-    projectId: "my-diary-app-ee165"
-  };
+// ---------- FIREBASE ----------
+const firebaseConfig = {
+  apiKey: "AIzaSyA8hfYjGN1EgB7K8x77p_ky84ssuWS8EkI",
+  authDomain: "my-diary-app-ee165.firebaseapp.com",
+  projectId: "my-diary-app-ee165"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+// ---------- LOGIN ----------
+const USER = "yusufsodiq082@gmail.com";
+const PASS = "a336336a";
+
+window.addEventListener("DOMContentLoaded", ()=>{
+  const email = document.getElementById("email");
+  const password = document.getElementById("password");
+  const loginBtn = document.getElementById("loginBtn");
+  const loginBox = document.getElementById("loginBox");
+  const diary = document.getElementById("diary");
+  const title = document.getElementById("title");
+  const msg = document.getElementById("msg");
+  const text = document.getElementById("text");
+  const saveBtn = document.getElementById("saveBtn");
+  const entriesDiv = document.getElementById("entries");
+  const searchInput = document.getElementById("search");
 
   // ---------- LOGIN ----------
-  const USER = "yusufsodiq082@gmail.com";
-  const PASS = "a336336a";
-
-  window.addEventListener("DOMContentLoaded", ()=>{
-    const email = document.getElementById("email");
-    const password = document.getElementById("password");
-    const loginBtn = document.getElementById("loginBtn");
-    const loginBox = document.getElementById("loginBox");
-    const diary = document.getElementById("diary");
-    const title = document.getElementById("title");
-    const msg = document.getElementById("msg");
-    const text = document.getElementById("text");
-    const saveBtn = document.getElementById("saveBtn");
-    const entriesDiv = document.getElementById("entries");
-
-    loginBtn.onclick = ()=>{
-      if(email.value === USER && password.value === PASS){
-        loginBox.classList.add("hidden");
-        diary.classList.remove("hidden");
-        title.innerText = "📔 My Diary";
-        loadEntries();
-      } else {
-        msg.innerText = "❌ Incorrect login or password";
-      }
-    };
-
-    // ---------- SAVE ENTRY ----------
-    saveBtn.onclick = async ()=>{
-      const txt = text.value.trim();
-      if(!txt) return alert("Write something!");
-      try {
-        await addDoc(collection(db,"diary"),{
-          text: txt,
-          time: new Date().toLocaleString()
-        });
-        text.value = "";
-        loadEntries();
-      } catch(e){
-        alert("Error saving: " + e.message);
-      }
-    };
-
-    // ---------- LOAD ENTRIES ----------
-    async function loadEntries(){
-      entriesDiv.innerHTML = "";
-      const q = query(collection(db,"diary"), orderBy("time","desc"));
-      const snapshot = await getDocs(q);
-      snapshot.forEach(doc=>{
-        const d = doc.data();
-        const div = document.createElement("div");
-        div.className="entry";
-        div.innerHTML = `<b>${d.time}</b><br>${d.text}`;
-        entriesDiv.appendChild(div);
-      });
+  loginBtn.onclick = ()=>{
+    if(email.value === USER && password.value === PASS){
+      loginBox.classList.add("hidden");
+      diary.classList.remove("hidden");
+      title.innerText = "📔 My Diary";
+      loadEntries();
+    } else {
+      msg.innerText = "❌ Incorrect login or password";
     }
-  });
+  };
+
+  // ---------- SAVE ----------
+  saveBtn.onclick = async ()=>{
+    const txt = text.value.trim();
+    if(!txt) return alert("Write something!");
+    await addDoc(collection(db,"diary"),{
+      text: txt,
+      time: Date.now()
+    });
+    text.value="";
+    loadEntries();
+  };
+
+  // ---------- LOAD ----------
+  async function loadEntries(){
+    entriesDiv.innerHTML = "";
+    const q = query(collection(db,"diary"), orderBy("time","desc"));
+    const snapshot = await getDocs(q);
+    snapshot.forEach(docSnap=>{
+      const d = docSnap.data();
+      const div = document.createElement("div");
+      div.className="entry";
+      div.innerHTML = `
+        <b>${new Date(d.time).toLocaleString()}</b><br>
+        <span class="entry-text">${d.text}</span>
+        <button class="editBtn">✏️</button>
+        <button class="delBtn">🗑️</button>
+      `;
+      entriesDiv.appendChild(div);
+
+      // ---------- DELETE ----------
+      div.querySelector(".delBtn").onclick = async ()=>{
+        if(confirm("Delete this entry?")){
+          await deleteDoc(doc(db,"diary",docSnap.id));
+          loadEntries();
+        }
+      };
+
+      // ---------- EDIT ----------
+      div.querySelector(".editBtn").onclick = ()=>{
+        const newText = prompt("Edit your entry:", d.text);
+        if(newText !== null){
+          updateDoc(doc(db,"diary",docSnap.id), { text: newText });
+          loadEntries();
+        }
+      };
+    });
+  }
+
+  // ---------- SEARCH ----------
+  searchInput.oninput = ()=>{
+    const queryText = searchInput.value.toLowerCase();
+    document.querySelectorAll(".entry").forEach(e=>{
+      const txt = e.querySelector(".entry-text").innerText.toLowerCase();
+      e.style.display = txt.includes(queryText) ? "" : "none";
+    });
+  };
+});
 </script>
 </head>
 <body>
@@ -113,6 +150,7 @@ input, textarea, button {
 <div id="diary" class="hidden">
   <textarea id="text" placeholder="Write your thoughts..."></textarea>
   <button id="saveBtn">➕ Save</button>
+  <input id="search" placeholder="Search entries...">
   <div id="entries"></div>
 </div>
 
