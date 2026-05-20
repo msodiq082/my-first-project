@@ -23,7 +23,6 @@
     letter-spacing: 1px;
   }
 
-  /* LOGIN */
   #loginBox {
     max-width: 400px;
     margin: 80px auto;
@@ -35,9 +34,7 @@
 
   #loginBox h2 { margin-bottom: 28px; }
 
-  .input-group {
-    margin-bottom: 14px;
-  }
+  .input-group { margin-bottom: 14px; }
 
   .input-group label {
     display: block;
@@ -84,11 +81,7 @@
     min-height: 20px;
   }
 
-  /* DIARY */
-  #diary {
-    max-width: 700px;
-    margin: 0 auto;
-  }
+  #diary { max-width: 700px; margin: 0 auto; }
 
   .top-bar {
     display: flex;
@@ -112,7 +105,34 @@
 
   #logoutBtn:hover { background: #2a2a2a; color: #f0f0f0; }
 
-  /* WRITE BOX */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 6px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #888;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn.active { background: #7c6af7; color: white; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
   .write-box {
     background: #1a1a1a;
     border: 1px solid #2a2a2a;
@@ -177,10 +197,7 @@
     margin-top: 12px;
   }
 
-  #charCount {
-    font-size: 13px;
-    color: #555;
-  }
+  #charCount { font-size: 13px; color: #555; }
 
   #saveBtn {
     background: #7c6af7;
@@ -196,7 +213,6 @@
 
   #saveBtn:hover { background: #6a58e0; }
 
-  /* STATS ROW */
   .stats-row {
     display: flex;
     gap: 12px;
@@ -224,7 +240,6 @@
     margin-top: 4px;
   }
 
-  /* SEARCH */
   #search {
     width: 100%;
     padding: 12px 16px;
@@ -240,7 +255,6 @@
 
   #search:focus { border-color: #7c6af7; }
 
-  /* ENTRIES */
   .entry {
     background: #1a1a1a;
     border: 1px solid #2a2a2a;
@@ -259,16 +273,8 @@
     margin-bottom: 10px;
   }
 
-  .entry-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .entry-date {
-    font-size: 13px;
-    color: #666;
-  }
+  .entry-meta { display: flex; align-items: center; gap: 10px; }
+  .entry-date { font-size: 13px; color: #666; }
 
   .entry-mood-tag {
     font-size: 12px;
@@ -292,7 +298,6 @@
   }
 
   .entry-actions button:hover { background: #222; color: #f0f0f0; border-color: #444; }
-
   .del-btn:hover { color: #e05757 !important; border-color: #e05757 !important; }
 
   .entry-text {
@@ -303,20 +308,141 @@
     word-break: break-word;
   }
 
-  .entry-wordcount {
-    font-size: 12px;
-    color: #444;
-    margin-top: 10px;
-  }
+  .entry-wordcount { font-size: 12px; color: #444; margin-top: 10px; }
 
-  #noEntries {
+  /* PHOTOS */
+  .upload-area {
+    background: #1a1a1a;
+    border: 2px dashed #333;
+    border-radius: 16px;
+    padding: 36px 20px;
     text-align: center;
-    color: #444;
-    padding: 40px;
-    font-size: 15px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: border-color 0.2s;
   }
 
-  .hidden { display: none !important; }
+  .upload-area:hover { border-color: #7c6af7; }
+  .upload-area .icon { font-size: 40px; }
+  .upload-area p { color: #666; font-size: 15px; margin-top: 10px; }
+  .upload-area p.sub { font-size: 13px; color: #444; margin-top: 4px; }
+
+  #photoInput { display: none; }
+
+  #uploadBtn {
+    background: #7c6af7;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 14px;
+    transition: background 0.2s;
+  }
+
+  #uploadBtn:hover { background: #6a58e0; }
+  #uploadBtn:disabled { background: #444; cursor: not-allowed; }
+
+  .upload-progress {
+    margin-top: 12px;
+    font-size: 14px;
+    min-height: 20px;
+  }
+
+  .progress-bar-wrap {
+    background: #2a2a2a;
+    border-radius: 10px;
+    height: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+    display: none;
+  }
+
+  .progress-bar {
+    background: #7c6af7;
+    height: 100%;
+    width: 0%;
+    border-radius: 10px;
+    transition: width 0.3s;
+  }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+  }
+
+  .photo-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .photo-card:hover { border-color: #444; }
+
+  .photo-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+  }
+
+  .photo-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+  }
+
+  .photo-date { font-size: 11px; color: #555; }
+
+  .photo-del {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.2s;
+    padding: 2px 6px;
+  }
+
+  .photo-del:hover { color: #e05757; }
+
+  /* LIGHTBOX */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+
+  .lightbox img {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 10px;
+    object-fit: contain;
+  }
+
+  .lightbox-close {
+    position: fixed;
+    top: 20px;
+    right: 28px;
+    font-size: 32px;
+    color: white;
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+  }
 
   /* EDIT MODAL */
   .modal-overlay {
@@ -339,11 +465,7 @@
     max-width: 520px;
   }
 
-  .modal-box h3 {
-    font-size: 18px;
-    margin-bottom: 16px;
-    color: #f0f0f0;
-  }
+  .modal-box h3 { font-size: 18px; margin-bottom: 16px; color: #f0f0f0; }
 
   .modal-box textarea {
     width: 100%;
@@ -383,26 +505,15 @@
   #confirmEdit { background: #7c6af7; color: white; border-color: #7c6af7; }
   #confirmEdit:hover { background: #6a58e0; }
 
-  .loading {
-    text-align: center;
-    color: #555;
-    padding: 30px;
-    font-size: 15px;
-  }
+  .loading { text-align: center; color: #555; padding: 30px; font-size: 15px; }
+  .hidden { display: none !important; }
 </style>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  orderBy,
-  doc,
-  deleteDoc,
-  updateDoc
+  getFirestore, collection, addDoc, getDocs,
+  query, orderBy, doc, deleteDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -416,6 +527,7 @@ const db = getFirestore(app);
 
 const USER = "yusufsodiq082@gmail.com";
 const PASS = "a336336a";
+const IMGBB_KEY = "726546bc3df78bd73decd1c905972bc8";
 
 let selectedMood = "";
 let allEntries = [];
@@ -441,8 +553,27 @@ window.addEventListener("DOMContentLoaded", () => {
   const editTextarea = document.getElementById("editTextarea");
   const cancelEdit   = document.getElementById("cancelEdit");
   const confirmEdit  = document.getElementById("confirmEdit");
+  const photoInput   = document.getElementById("photoInput");
+  const uploadBtn    = document.getElementById("uploadBtn");
+  const uploadStatus = document.getElementById("uploadStatus");
+  const progressWrap = document.getElementById("progressWrap");
+  const progressBar  = document.getElementById("progressBar");
+  const photoGrid    = document.getElementById("photoGrid");
+  const lightbox     = document.getElementById("lightbox");
+  const lightboxImg  = document.getElementById("lightboxImg");
+  const lightboxClose= document.getElementById("lightboxClose");
 
-  // Mood buttons
+  // TABS
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+    };
+  });
+
+  // MOOD
   document.querySelectorAll(".mood-btn").forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll(".mood-btn").forEach(b => b.classList.remove("active"));
@@ -451,46 +582,37 @@ window.addEventListener("DOMContentLoaded", () => {
     };
   });
 
-  // Char count
-  textEl.oninput = () => {
-    const len = textEl.value.length;
-    charCount.textContent = len + " characters";
-  };
+  // CHAR COUNT
+  textEl.oninput = () => { charCount.textContent = textEl.value.length + " characters"; };
 
-  // Login
+  // LOGIN
   loginBtn.onclick = () => {
     if (emailEl.value.trim() === USER && passEl.value === PASS) {
       loginBox.classList.add("hidden");
       diary.classList.remove("hidden");
       loadEntries();
+      loadPhotos();
     } else {
       msgEl.textContent = "❌ Incorrect email or password";
     }
   };
 
-  // Enter key login
   passEl.onkeydown = e => { if (e.key === "Enter") loginBtn.click(); };
 
-  // Logout
+  // LOGOUT
   logoutBtn.onclick = () => {
     diary.classList.add("hidden");
     loginBox.classList.remove("hidden");
-    emailEl.value = "";
-    passEl.value = "";
-    msgEl.textContent = "";
+    emailEl.value = ""; passEl.value = ""; msgEl.textContent = "";
   };
 
-  // Save
+  // SAVE ENTRY
   saveBtn.onclick = async () => {
     const txt = textEl.value.trim();
     if (!txt) { alert("Write something first!"); return; }
     saveBtn.textContent = "Saving...";
     saveBtn.disabled = true;
-    await addDoc(collection(db, "diary"), {
-      text: txt,
-      mood: selectedMood,
-      time: Date.now()
-    });
+    await addDoc(collection(db, "diary"), { text: txt, mood: selectedMood, time: Date.now() });
     textEl.value = "";
     charCount.textContent = "0 characters";
     selectedMood = "";
@@ -500,15 +622,13 @@ window.addEventListener("DOMContentLoaded", () => {
     loadEntries();
   };
 
-  // Load
+  // LOAD ENTRIES
   async function loadEntries() {
     entriesDiv.innerHTML = '<div class="loading">Loading entries...</div>';
     const q = query(collection(db, "diary"), orderBy("time", "desc"));
     const snapshot = await getDocs(q);
     allEntries = [];
-    snapshot.forEach(docSnap => {
-      allEntries.push({ id: docSnap.id, ...docSnap.data() });
-    });
+    snapshot.forEach(docSnap => allEntries.push({ id: docSnap.id, ...docSnap.data() }));
     updateStats();
     renderEntries(allEntries);
   }
@@ -517,22 +637,16 @@ window.addEventListener("DOMContentLoaded", () => {
     totalEl.textContent = allEntries.length;
     const totalWords = allEntries.reduce((sum, e) => sum + e.text.trim().split(/\s+/).filter(Boolean).length, 0);
     wordsEl.textContent = totalWords.toLocaleString();
-
-    // Streak: count consecutive days with entries (from today backwards)
     const days = new Set(allEntries.map(e => new Date(e.time).toDateString()));
-    let streak = 0;
-    let d = new Date();
-    while (days.has(d.toDateString())) {
-      streak++;
-      d.setDate(d.getDate() - 1);
-    }
+    let streak = 0, d = new Date();
+    while (days.has(d.toDateString())) { streak++; d.setDate(d.getDate() - 1); }
     streakEl.textContent = streak;
   }
 
   function renderEntries(list) {
     entriesDiv.innerHTML = "";
     if (list.length === 0) {
-      entriesDiv.innerHTML = '<div id="noEntries">No entries yet. Write your first one! ✨</div>';
+      entriesDiv.innerHTML = '<div style="text-align:center;color:#444;padding:40px;font-size:15px;">No entries yet. Write your first one! ✨</div>';
       return;
     }
     list.forEach(entry => {
@@ -541,7 +655,6 @@ window.addEventListener("DOMContentLoaded", () => {
       const date = new Date(entry.time).toLocaleString();
       const wordCount = entry.text.trim().split(/\s+/).filter(Boolean).length;
       const moodTag = entry.mood ? `<span class="entry-mood-tag">${entry.mood}</span>` : "";
-
       div.innerHTML = `
         <div class="entry-header">
           <div class="entry-meta">
@@ -556,16 +669,10 @@ window.addEventListener("DOMContentLoaded", () => {
         <div class="entry-text">${escapeHtml(entry.text)}</div>
         <div class="entry-wordcount">${wordCount} words</div>
       `;
-
       entriesDiv.appendChild(div);
-
       div.querySelector(".delBtn").onclick = async () => {
-        if (confirm("Delete this entry? This cannot be undone.")) {
-          await deleteDoc(doc(db, "diary", entry.id));
-          loadEntries();
-        }
+        if (confirm("Delete this entry?")) { await deleteDoc(doc(db, "diary", entry.id)); loadEntries(); }
       };
-
       div.querySelector(".editBtn").onclick = () => {
         editingDocId = entry.id;
         editTextarea.value = entry.text;
@@ -574,12 +681,14 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Edit modal
-  cancelEdit.onclick = () => {
-    modalOverlay.classList.add("hidden");
-    editingDocId = null;
+  // SEARCH
+  searchEl.oninput = () => {
+    const q = searchEl.value.toLowerCase();
+    renderEntries(q ? allEntries.filter(e => e.text.toLowerCase().includes(q)) : allEntries);
   };
 
+  // EDIT MODAL
+  cancelEdit.onclick = () => { modalOverlay.classList.add("hidden"); editingDocId = null; };
   confirmEdit.onclick = async () => {
     const newText = editTextarea.value.trim();
     if (!newText) { alert("Entry cannot be empty!"); return; }
@@ -591,12 +700,118 @@ window.addEventListener("DOMContentLoaded", () => {
     loadEntries();
   };
 
-  // Search
-  searchEl.oninput = () => {
-    const q = searchEl.value.toLowerCase();
-    if (!q) { renderEntries(allEntries); return; }
-    renderEntries(allEntries.filter(e => e.text.toLowerCase().includes(q)));
+  // ---- PHOTOS with ImgBB ----
+
+  document.getElementById("uploadArea").onclick = () => photoInput.click();
+  uploadBtn.onclick = e => { e.stopPropagation(); photoInput.click(); };
+
+  photoInput.onchange = async () => {
+    const file = photoInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { alert("Please select an image file!"); return; }
+    if (file.size > 32 * 1024 * 1024) { alert("Image must be under 32MB!"); return; }
+
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = "Uploading...";
+    uploadStatus.style.color = "#7c6af7";
+    uploadStatus.textContent = "Uploading your photo...";
+    progressWrap.style.display = "block";
+    progressBar.style.width = "30%";
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("key", IMGBB_KEY);
+
+      progressBar.style.width = "60%";
+
+      const response = await fetch("https://api.imgbb.com/1/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      progressBar.style.width = "90%";
+      const result = await response.json();
+
+      if (result.success) {
+        // Save photo info to Firestore so we can list and delete later
+        await addDoc(collection(db, "photos"), {
+          url: result.data.url,
+          thumb: result.data.thumb ? result.data.thumb.url : result.data.url,
+          deleteUrl: result.data.delete_url,
+          time: Date.now(),
+          name: file.name
+        });
+
+        progressBar.style.width = "100%";
+        uploadStatus.style.color = "#4caf88";
+        uploadStatus.textContent = "✅ Photo uploaded successfully!";
+        photoInput.value = "";
+        setTimeout(() => {
+          uploadStatus.textContent = "";
+          progressWrap.style.display = "none";
+          progressBar.style.width = "0%";
+        }, 2500);
+        loadPhotos();
+      } else {
+        throw new Error(result.error?.message || "Upload failed");
+      }
+    } catch (err) {
+      uploadStatus.style.color = "#e05757";
+      uploadStatus.textContent = "❌ Upload failed: " + err.message;
+      progressWrap.style.display = "none";
+      console.error(err);
+    }
+
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = "📤 Upload Photo";
   };
+
+  async function loadPhotos() {
+    photoGrid.innerHTML = '<div class="loading">Loading photos...</div>';
+    try {
+      const q = query(collection(db, "photos"), orderBy("time", "desc"));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        photoGrid.innerHTML = '<div style="text-align:center;color:#444;padding:40px;font-size:15px;grid-column:1/-1;">No photos yet. Upload your first one! 📸</div>';
+        return;
+      }
+
+      photoGrid.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        const date = new Date(d.time).toLocaleDateString();
+        const card = document.createElement("div");
+        card.className = "photo-card";
+        card.innerHTML = `
+          <img src="${d.thumb || d.url}" alt="Photo" loading="lazy">
+          <div class="photo-card-footer">
+            <span class="photo-date">${date}</span>
+            <button class="photo-del" title="Delete">🗑️</button>
+          </div>
+        `;
+        card.querySelector("img").onclick = () => {
+          lightboxImg.src = d.url;
+          lightbox.classList.remove("hidden");
+        };
+        card.querySelector(".photo-del").onclick = async () => {
+          if (confirm("Delete this photo?")) {
+            await deleteDoc(doc(db, "photos", docSnap.id));
+            loadPhotos();
+          }
+        };
+        photoGrid.appendChild(card);
+      });
+    } catch (err) {
+      photoGrid.innerHTML = '<div style="text-align:center;color:#e05757;padding:30px;">Could not load photos.</div>';
+      console.error(err);
+    }
+  }
+
+  // LIGHTBOX
+  lightboxClose.onclick = () => lightbox.classList.add("hidden");
+  lightbox.onclick = e => { if (e.target === lightbox) lightbox.classList.add("hidden"); };
 
   function escapeHtml(str) {
     return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -629,7 +844,6 @@ window.addEventListener("DOMContentLoaded", () => {
     <button id="logoutBtn">Logout</button>
   </div>
 
-  <!-- Stats -->
   <div class="stats-row">
     <div class="stat-card">
       <div class="num" id="totalEntries">0</div>
@@ -645,28 +859,47 @@ window.addEventListener("DOMContentLoaded", () => {
     </div>
   </div>
 
-  <!-- Write -->
-  <div class="write-box">
-    <div class="mood-row">
-      <label>Mood:</label>
-      <button class="mood-btn" data-mood="😊 Happy">😊 Happy</button>
-      <button class="mood-btn" data-mood="😔 Sad">😔 Sad</button>
-      <button class="mood-btn" data-mood="😤 Frustrated">😤 Frustrated</button>
-      <button class="mood-btn" data-mood="😌 Calm">😌 Calm</button>
-      <button class="mood-btn" data-mood="🔥 Motivated">🔥 Motivated</button>
-    </div>
-    <textarea id="text" placeholder="What's on your mind today?"></textarea>
-    <div class="write-footer">
-      <span id="charCount">0 characters</span>
-      <button id="saveBtn">✚ Save Entry</button>
-    </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tabDiary">📝 Diary</button>
+    <button class="tab-btn" data-tab="tabPhotos">📸 Photos</button>
   </div>
 
-  <!-- Search -->
-  <input id="search" type="text" placeholder="🔍 Search your entries...">
+  <!-- DIARY TAB -->
+  <div id="tabDiary" class="tab-panel active">
+    <div class="write-box">
+      <div class="mood-row">
+        <label>Mood:</label>
+        <button class="mood-btn" data-mood="😊 Happy">😊 Happy</button>
+        <button class="mood-btn" data-mood="😔 Sad">😔 Sad</button>
+        <button class="mood-btn" data-mood="😤 Frustrated">😤 Frustrated</button>
+        <button class="mood-btn" data-mood="😌 Calm">😌 Calm</button>
+        <button class="mood-btn" data-mood="🔥 Motivated">🔥 Motivated</button>
+      </div>
+      <textarea id="text" placeholder="What's on your mind today?"></textarea>
+      <div class="write-footer">
+        <span id="charCount">0 characters</span>
+        <button id="saveBtn">✚ Save Entry</button>
+      </div>
+    </div>
+    <input id="search" type="text" placeholder="🔍 Search your entries...">
+    <div id="entries"></div>
+  </div>
 
-  <!-- Entries -->
-  <div id="entries"></div>
+  <!-- PHOTOS TAB -->
+  <div id="tabPhotos" class="tab-panel">
+    <div class="upload-area" id="uploadArea">
+      <div class="icon">🖼️</div>
+      <p>Click here to choose a photo</p>
+      <p class="sub">JPG, PNG, GIF, WEBP — max 32MB</p>
+      <input type="file" id="photoInput" accept="image/*">
+      <button id="uploadBtn">📤 Upload Photo</button>
+    </div>
+    <div class="upload-progress" id="uploadStatus"></div>
+    <div class="progress-bar-wrap" id="progressWrap">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div id="photoGrid" class="photo-grid"></div>
+  </div>
 
 </div>
 
@@ -680,6 +913,12 @@ window.addEventListener("DOMContentLoaded", () => {
       <button id="confirmEdit">Save Changes</button>
     </div>
   </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox hidden">
+  <button class="lightbox-close" id="lightboxClose">✕</button>
+  <img id="lightboxImg" src="" alt="Full size photo">
 </div>
 
 </body>
